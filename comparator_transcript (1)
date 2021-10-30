@@ -1,0 +1,14 @@
+run -all
+# debugging mode enabled
+# time in cpu clock cycles is 8, op is 2 and addr is 01ff97000
+# time in cpu clock cycles is 9, op is 2 and addr is 01ff97080
+# time in cpu clock cycles is 10, op is 0 and addr is 10fffff00
+# time in cpu clock cycles is 11, op is 1 and addr is 10fffff80
+# The address is not 8-byte aligned
+# The address is not 8-byte aligned
+# The address is not 8-byte aligned
+# The address is not 8-byte aligned
+# The address is not 8-byte aligned
+# enter correct operation value
+# The address is not 8-byte aligned
+# input string at line 11 not valid
