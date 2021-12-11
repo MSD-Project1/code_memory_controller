@@ -28,7 +28,7 @@ System Verilog
 	-final.sv
 	-trace.txt (has all the inputs)
 2. Enter the commands in command line of Questasim:
-	i.vlib work (which contains the files final.sv,trace.txt and dramout.txt was generated).
-	ii.vlog final.sv
-	iii.vsim -c tb_test +DEBUG=0 +inputfile=trace.txt +outputfile=dramout.txt
-	iv.run -all
+3.	i.vlib work (which contains the files final.sv,trace.txt and dramout.txt was generated).
+4.	ii.vlog final.sv
+5.	iii.vsim -c tb_test +DEBUG=0 +inputfile=trace.txt +outputfile=dramout.txt
+6.	iv.run -all
