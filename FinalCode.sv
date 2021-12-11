@@ -1,5 +1,3 @@
-
-
 module tb_test;
 
 `define tRC 76
@@ -37,14 +35,6 @@ always
 begin
 #(5) clk = ~clk;
 end
-
-/*typedef struct {
-  longint unsigned r_time;
-  int operation;
-    logic [32:0] addr;
-    int time_in_q = 100;
-    int dram_op_time;
-  } request; */
   
   typedef struct {
 	bit CurrentState;
@@ -58,8 +48,6 @@ end
 bankstate BS [4][4];
 
 bit [1:0] last_bg;
-
-
 //if bg accessed
 //last bank accesses
 // last accessed op in bank bank group
@@ -70,7 +58,6 @@ typedef struct {
 } bg_info;
 
 bg_info bg1[4];
-
 
 typedef struct {
   longint unsigned r_time;
@@ -86,8 +73,8 @@ typedef struct {
     int dram_op_time;
   } request;
   request r1;
-request mem_queue [$:15];
 
+request mem_queue [$:15];
  function print_queue(request q[$:15]);
 		$display("queue elements are: ");
 		for(int j=0; j<q.size(); j++)
@@ -95,11 +82,6 @@ request mem_queue [$:15];
 			$display("request time : %0d, operation : %s, address: %h , time in queue is : %0d", q[j].r_time, op[q[j].operation],q[j].addr,q[j].time_in_q);
 		end
  endfunction
-
-
-
-
-
 
 initial 
 begin
@@ -173,31 +155,6 @@ begin
 end
 end
 end
-
-/*always @(posedge clk)
-begin
-  
-  for(int i=0; i< mem_queue.size(); i++)
-  begin
-		mem_queue[i].time_in_q = mem_queue[i].time_in_q -1;
-		
-  end
-end */
-
-/*always @(posedge clk)
-begin
-	if(mem_queue.size()!=0)
-		begin
-			if(mem_queue[0].time_in_q == 0)
-			begin
-				$display("element popped - current time: %0d, request time: %0d, operation: %s and mem address is %h ",simulation_time, mem_queue[0].r_time, op[mem_queue[0].operation],mem_queue[0].addr);
-				mem_queue.pop_front();
-			end
-			simulation_time <= simulation_time + 1;
-			
-		end
-
-end */
 
 always @(posedge clk)
 begin
@@ -283,21 +240,21 @@ end
 
 
 always @(posedge clk)
-	begin//
+	begin
 		if(mem_queue.size() != 0 && fout)
-		begin//
+		begin
 		
 			if(mem_queue[0].operation == 0 || mem_queue[0].operation == 2) // read or if
-			begin//
+			begin
 				if(BS[mem_queue[0].bg][mem_queue[0].bank].CurrentState) // bank gp bank active
-				begin//
+				begin
 					if(mem_queue[0].row == BS[mem_queue[0].bg][mem_queue[0].bank].OpenRow)
-					begin//
+					begin
 						// just read 
 						if(bg1[mem_queue[0].bg].last_op == 0) // last read
-						begin//
+						begin
 							if(BS[mem_queue[0].bg][mem_queue[0].bank].TimeSinceLast[2] >= (`tCCD_L*2))
-							begin//
+							begin
 								// issue read
 								
 								cmd = 2; // 2 is for a read
@@ -311,14 +268,14 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-							end//
+							end
 						
-						end//
+						end
 						// if last op was write
 						else 
-						begin//
+						begin
 							if(BS[mem_queue[0].bg][mem_queue[0].bank].TimeSinceLast[3] >= (`tWTR_L*2))
-							begin//
+							begin
 								// issue read
 								cmd = 2; // 2 is for a read
 								RD(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].col);
@@ -331,12 +288,12 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-							end//
-						end//
+							end
+						end
 					
-					end//
+					end
 					else
-					begin//
+					begin
 					// diff row - then pre act and read
 						// read to precharge or write to precharge 
 						if(bg1[mem_queue[0].bg].last_op == 0)
@@ -363,14 +320,12 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-							//end//
-						
-						end//
+						end
 						else
-						begin//
+						begin
 						// if last op was write
 							//if(BS[mem_queue[0].bg][mem_queue[0].bank].TimeSinceLast[3] >= (`tWR*2))
-							//begin//
+							//begin
 								cmd = 0; // 0 is for a pre
 								PRE(simulation_time,mem_queue[0].bg,mem_queue[0].bank);
 								BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
@@ -391,18 +346,16 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-							//end//
-						end//
-					end//
-				end//
+							
+						end
+					end
+				end
 				else
-				begin//
+				begin
 					// bank bg never accessed then act and read 
 					// cases bg accessed or not accessed if accesses long delays else short.
 					if(bg1[mem_queue[0].bg].accessed)
-					begin//
-						//if(BS[mem_queue[0].bg][bg1[mem_queue[0].bg].last_bank].TimeSinceLast[1] >= (`tRRD_L*2))
-						//begin//
+					begin
 								cmd = 1; // 1 is for act
 								ACT(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].row);
 								BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
@@ -420,14 +373,12 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-						
-						//end//
 					
-					end//
+					end
 					else
-					begin//
+					begin
 						//if(BS[last_bg][bg1[last_bg].last_bank].TimeSinceLast[1] >= (`tRRD_S*2)|| first_access)
-						//begin//
+						
 								cmd = 1; // 1 is for act
 								ACT(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].row);
 								BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
@@ -446,28 +397,21 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-						
-						//end//
-					
-					end//
-				
-				end//
-						
-			
-
-			end//
+					end
+				end
+			end
 			// in case of write
 			else 
-				begin//
+				begin
 				if(BS[mem_queue[0].bg][mem_queue[0].bank].CurrentState) // bank gp bank active
 				begin
 					if(mem_queue[0].row == BS[mem_queue[0].bg][mem_queue[0].bank].OpenRow)
-					begin//
+					begin
 						// just write
 						if(bg1[mem_queue[0].bg].last_op == 0)
-						begin//
+						begin
 							if(BS[mem_queue[0].bg][mem_queue[0].bank].TimeSinceLast[2] >= ((`tCAS + `tBURST + 1 - `CWL)*2))
-							begin//
+							begin
 								// issue write
 								cmd = 3; // 3 is for a write
 								WR(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].col);
@@ -480,14 +424,14 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-							end//
+							end
 						
-						end//
+						end
 						// if last op was write
 						else 
-						begin//
+						begin
 							if(BS[mem_queue[0].bg][mem_queue[0].bank].TimeSinceLast[3] >= (`tCCD_L*2)) // not given
-							begin//
+							begin
 								// issue write
 								cmd = 3; // 3 is for a wr
 								WR(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].col);
@@ -500,18 +444,17 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-							end//
-						end//
+							end
+						end
 					
-					end//
+					end
 					else
-					begin//
+					begin
 					// diff row - then pre act and read
 						// read to precharge or write to precharge 
 						if(bg1[mem_queue[0].bg].last_op == 0)
-						begin//
+						begin
 							//if(BS[mem_queue[0].bg][mem_queue[0].bank].TimeSinceLast[2] >= (`tRTP*2))
-							//begin//
 								cmd = 0; // 0 is for a pre
 								PRE(simulation_time,mem_queue[0].bg,mem_queue[0].bank);
 								BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
@@ -531,15 +474,12 @@ always @(posedge clk)
 								last_bg = mem_queue[0].bg;
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
-								mem_queue.pop_front();
-							//end//
-						
-						end//
+								mem_queue.pop_front();			
+						end
 						else
-						begin//
+						begin
 						// if last op was write
 							//if(BS[mem_queue[0].bg][mem_queue[0].bank].TimeSinceLast[3] >= (`tWR*2))
-							//begin//
 								cmd = 0; // 0 is for a pre
 								PRE(simulation_time,mem_queue[0].bg,mem_queue[0].bank);
 								BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
@@ -560,18 +500,16 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-							//end//
-						end//
-					end//
-				end//
+						end
+					end
+				end
 				else
-				begin//
+				begin
 					// bank bg never accessed then act and write
 					// cases bg accessed or not accessed if accesses long delays else short.
 					if(bg1[mem_queue[0].bg].accessed)
-					begin//
+					begin
 						//if(BS[mem_queue[0].bg][bg1[mem_queue[0].bg].last_bank].TimeSinceLast[1] >= (`tRRD_L*2))
-						//begin//
 								cmd = 1; // 1 is for act
 								ACT(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].row);
 								BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
@@ -589,14 +527,10 @@ always @(posedge clk)
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
 								mem_queue.pop_front();
-						
-						//end//
-					
-					end//
+					end
 					else
-					begin//
+					begin
 						//if(BS[last_bg][bg1[last_bg].last_bank].TimeSinceLast[1] >= (`tRRD_S*2) || first_access)
-						//begin//
 								cmd = 1; // 1 is for act
 								ACT(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].row);
 								BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
@@ -614,47 +548,12 @@ always @(posedge clk)
 								first_access = 0;
 								if(DEBUG)
 								$display("request served: current time: %0d, operation: %s and mem address is %h ",simulation_time, op[mem_queue[0].operation],mem_queue[0].addr);
-								mem_queue.pop_front();
-						
-						//end//
-					
-					end//
-			
-			
-			
-			
-				end//
-			
-			
-		
-			
-			
-		end//
-	end//
-end
-
-	/*always @(posedge clk)
-	begin
-		if(mem_queue.size() != 0 && fout)
-		begin
-			
-			BS[mem_queue[0].bg][mem_queue[0].bank].CurrentState = 1;
-			cmd = 0; // 0 is precharge
-			PRE(simulation_time,mem_queue[0].bg,mem_queue[0].bank);
-			BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
-			repeat (`tRP*2) @(posedge clk);
-			cmd = 1; // 1 is for act
-			ACT(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].row);
-			BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
-			repeat(`tRCD*2) @(posedge clk);
-			cmd = 2; // 2 is for a read
-			RD(simulation_time,mem_queue[0].bg,mem_queue[0].bank,mem_queue[0].col);
-			BS[mem_queue[0].bg][mem_queue[0].bank].cmd_issued[cmd] = 1;
-			repeat((`tCAS + `tBURST)*2) @(posedge clk);
-			mem_queue.pop_front();
-			//POP(simulation_time);
+								mem_queue.pop_front();	
+					end
+				end	
 		end
-	end */
+	end
+end
 	
 always @(posedge clk)
 begin
@@ -676,22 +575,4 @@ end
 	
 initial
 #70000 $stop;
-
 endmodule
-
-
-// queue processing logic
-/*
-
-
-
-
-*/
-
-// we are reading one line ahead
-// if we put a check read line only when the simulation time is equal to time in line
-// not going to work
-// if queue is not empty , increment time by one and hold the value of line until simulation time is equal to time in line
-// then only change it 
-// so don't take values at every posedge but only after simulation time is equal to time in line.
-
