@@ -40,20 +40,20 @@ end
 	bit CurrentState;
 	// bit OngoingRequest;
 	 logic [14:0] OpenRow;
-	 bit [3:0] cmd_issued;
-	 bit [7:0] TimeSinceLast [4];
+	  bit [3:0] cmd_issued; // precharge, act , read and write
+	  bit [7:0] TimeSinceLast [4]; // time elapsed since last pre, act ,read and wr
 	 
 } bankstate;
 
-bankstate BS [4][4];
+	bankstate BS [4][4];  //first index for bg and second for bank
 
-bit [1:0] last_bg;
+	bit [1:0] last_bg; // last bank group accessed
 //if bg accessed
 //last bank accesses
 // last accessed op in bank bank group
 typedef struct {
 	bit accessed;
-	bit [1:0] last_bank;
+	bit [1:0] last_bank; //last bank accessed within a bank group
 	bit last_op; // 0 for read and 1 for write in a bank group.
 } bg_info;
 
@@ -353,7 +353,7 @@ always @(posedge clk)
 				else
 				begin
 					// bank bg never accessed then act and read 
-					// cases bg accessed or not accessed if accesses long delays else short.
+					// cases bg accessed or not accessed if accesses long delays else short. 
 					if(bg1[mem_queue[0].bg].accessed)
 					begin
 								cmd = 1; // 1 is for act
@@ -570,9 +570,11 @@ begin
 				end
 			end
 		end
-	end
+	end 
 end
+	//if timesincelast was to the same bg and bank and it issued the same command, timesincelast should be reset to 0 - update
 	
 initial
 #70000 $stop;
 endmodule
+
